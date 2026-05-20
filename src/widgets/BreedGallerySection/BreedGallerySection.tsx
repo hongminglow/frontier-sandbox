@@ -13,10 +13,10 @@ export const BreedGallerySection = ({ id }: { id: string }) => {
         rotate: 0,
         autoAlpha: 1,
         stagger: 0.07,
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 70%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )
@@ -31,7 +31,7 @@ export const BreedGallerySection = ({ id }: { id: string }) => {
         />
         <div className="grid auto-rows-[18rem] grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {breedGallery.map((dog, index) => (
-            <div key={`${dog.name}-${index}`} className={index === 0 || index === 5 ? 'row-span-2' : ''}>
+            <div key={`${dog.name}-${index}`} className={index === 0 || index === 5 ? 'row-span-2 min-h-0' : 'min-h-0'}>
               <BreedCard dog={dog} />
             </div>
           ))}

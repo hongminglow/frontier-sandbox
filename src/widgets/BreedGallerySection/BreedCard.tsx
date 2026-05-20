@@ -1,7 +1,7 @@
 import type { DogProfile } from '@entities/dog'
 
 export const BreedCard = ({ dog }: { dog: DogProfile }) => (
-  <article className="breed-card group relative min-h-72 overflow-hidden rounded-2xl border border-white/60 bg-[var(--card-bg)] shadow-[var(--card-shadow)] dark:border-white/10">
+  <article className="breed-card group relative h-full min-h-72 overflow-hidden rounded-2xl border border-white/60 bg-[var(--card-bg)] shadow-[var(--card-shadow)] dark:border-white/10">
     <div
       className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105"
       style={{

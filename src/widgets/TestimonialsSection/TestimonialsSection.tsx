@@ -20,10 +20,10 @@ export const TestimonialsSection = ({ id }: { id: string }) => {
         x: 0,
         autoAlpha: 1,
         stagger: 0.12,
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 72%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )
@@ -35,10 +35,10 @@ export const TestimonialsSection = ({ id }: { id: string }) => {
         scale: 1,
         stagger: 0.035,
         ease: 'back.out(2.5)',
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 72%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )

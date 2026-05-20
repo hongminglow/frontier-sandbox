@@ -45,10 +45,10 @@ export const FeaturesSection = ({ id }: { id: string }) => {
         autoAlpha: 1,
         scale: 1,
         stagger: 0.1,
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 72%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )

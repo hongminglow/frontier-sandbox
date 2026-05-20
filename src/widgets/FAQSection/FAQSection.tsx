@@ -14,10 +14,10 @@ export const FAQSection = ({ id }: { id: string }) => {
         x: 0,
         autoAlpha: 1,
         stagger: 0.1,
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 75%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )

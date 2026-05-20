@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Button, GradientText } from '@shared/ui'
+import { useSmoothScroll } from '@features/smooth-scroll'
 import { dogProfiles } from '@entities/dog'
 import { gsap } from '@shared/lib'
 import { siteConfig } from '@shared/constants'
@@ -13,6 +14,7 @@ type HeroSectionProps = {
 
 export const HeroSection = ({ id, ready }: HeroSectionProps) => {
   const sectionRef = useRef<HTMLElement | null>(null)
+  const { scrollToId } = useSmoothScroll()
 
   useEffect(() => {
     if (!ready || !sectionRef.current) {
@@ -92,13 +94,13 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
             {siteConfig.heroCopy}
           </p>
           <div className="hero-actions mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
+            <Button size="lg" onClick={() => scrollToId('pricing')}>
               {siteConfig.primaryCta}
             </Button>
             <Button
               size="lg"
               variant="outline"
-              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => scrollToId('how-it-works')}
             >
               ▶ {siteConfig.secondaryCta}
             </Button>

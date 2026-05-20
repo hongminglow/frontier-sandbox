@@ -6,7 +6,13 @@ export const useSmoothScroll = () => {
       return
     }
 
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const headerOffset = 92
+    const sectionTop = section.getBoundingClientRect().top + window.scrollY - headerOffset
+
+    window.scrollTo({
+      top: Math.max(sectionTop, 0),
+      behavior: 'smooth',
+    })
   }
 
   return { scrollToId }

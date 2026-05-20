@@ -1,6 +1,5 @@
 import { SectionHeading } from '@shared/ui'
 import { useScrollTrigger } from '@shared/hooks'
-import { ConnectingLine } from './ConnectingLine'
 import { StepCard } from './StepCard'
 
 const steps = [
@@ -34,30 +33,33 @@ export const HowItWorksSection = ({ id }: { id: string }) => {
   const sectionRef = useScrollTrigger<HTMLElement>((element, gsap) => {
     gsap.fromTo(
       element.querySelectorAll('.step-card'),
-      { y: 70, rotateX: 10, autoAlpha: 0 },
+      { y: 44, autoAlpha: 0, scale: 0.96 },
       {
         y: 0,
-        rotateX: 0,
         autoAlpha: 1,
+        scale: 1,
         stagger: 0.12,
-        immediateRender: false,
+        ease: 'back.out(1.25)',
         scrollTrigger: {
           trigger: element,
           start: 'top 70%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )
 
     gsap.fromTo(
-      element.querySelector('.connecting-line'),
-      { scaleX: 0 },
+      element.querySelectorAll('.step-icon'),
+      { scale: 0.8, rotate: -8 },
       {
-        scaleX: 1,
-        transformOrigin: 'left',
-        duration: 1.2,
+        scale: 1,
+        rotate: 0,
+        stagger: 0.12,
+        ease: 'elastic.out(1, 0.35)',
         scrollTrigger: {
           trigger: element,
-          start: 'top 68%',
+          start: 'top 70%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )
@@ -70,7 +72,6 @@ export const HowItWorksSection = ({ id }: { id: string }) => {
           title="From first swipe to first zoomies"
           subtitle="PawMatch keeps every step simple, specific, and owner-approved."
         />
-        <ConnectingLine />
         <div className="relative grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step) => (
             <StepCard key={step.number} {...step} />

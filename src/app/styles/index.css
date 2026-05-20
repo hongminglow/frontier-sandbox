@@ -107,6 +107,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
   background: var(--bg-primary);
 }
 
@@ -253,11 +254,43 @@ img {
   animation: quote-type 1.25s steps(42) both;
 }
 
-.reduced-motion *,
-.reduced-motion *::before,
-.reduced-motion *::after {
-  animation-duration: 1ms !important;
-  animation-iteration-count: 1 !important;
-  scroll-behavior: auto !important;
-  transition-duration: 1ms !important;
+@keyframes swipe-right {
+  to {
+    opacity: 0;
+    transform: translate3d(28rem, -2rem, 0) rotate(18deg);
+  }
+}
+
+@keyframes swipe-left {
+  to {
+    opacity: 0;
+    transform: translate3d(-28rem, -2rem, 0) rotate(-18deg);
+  }
+}
+
+@keyframes decision-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.6);
+  }
+}
+
+.swipe-right {
+  animation: swipe-right 520ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+}
+
+.swipe-left {
+  animation: swipe-left 520ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+}
+
+.decision-burst {
+  animation: decision-burst 700ms ease-out forwards;
 }

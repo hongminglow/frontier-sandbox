@@ -24,10 +24,10 @@ export const SectionHeading = ({
         y: 0,
         autoAlpha: 1,
         stagger: 0.12,
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 78%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )
@@ -43,6 +43,7 @@ export const SectionHeading = ({
           scrollTrigger: {
             trigger: element,
             start: 'top 78%',
+            toggleActions: 'play reverse play reverse',
           },
         },
       )

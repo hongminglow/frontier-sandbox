@@ -21,12 +21,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     window.localStorage.setItem('pawmatch-theme', theme)
   }, [theme])
 
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.documentElement.classList.add('reduced-motion')
-    }
-  }, [])
-
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,

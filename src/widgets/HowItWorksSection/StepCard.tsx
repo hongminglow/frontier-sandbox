@@ -6,11 +6,12 @@ type StepCardProps = {
 }
 
 export const StepCard = ({ number, icon, title, copy }: StepCardProps) => (
-  <article className="step-card tilt-card relative flex min-h-64 flex-col gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[var(--card-shadow)]">
+  <article className="step-card tilt-card relative flex min-h-64 flex-col gap-4 overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--card-bg)] p-6 shadow-[var(--card-shadow)]">
+    <span className="absolute inset-x-0 top-0 h-1 gradient-primary" aria-hidden="true" />
     <span className="absolute right-5 top-5 font-heading text-5xl font-extrabold text-primary-100 dark:text-white/10">
       {number}
     </span>
-    <span className="inline-flex size-14 items-center justify-center rounded-2xl gradient-primary text-3xl text-white shadow-[var(--shadow-glow)]">
+    <span className="step-icon inline-flex size-14 items-center justify-center rounded-2xl gradient-primary text-3xl text-white shadow-[var(--shadow-glow)]">
       {icon}
     </span>
     <div className="mt-auto flex flex-col gap-3">

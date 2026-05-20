@@ -16,10 +16,10 @@ export const PricingSection = ({ id }: { id: string }) => {
         autoAlpha: 1,
         scale: 1,
         stagger: 0.15,
-        immediateRender: false,
         scrollTrigger: {
           trigger: element,
           start: 'top 70%',
+          toggleActions: 'play reverse play reverse',
         },
       },
     )

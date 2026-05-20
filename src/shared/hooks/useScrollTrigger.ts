@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@shared/lib/gsapConfig'
 
 type ScrollAnimation = (
@@ -10,7 +10,7 @@ type ScrollAnimation = (
 export const useScrollTrigger = <T extends HTMLElement = HTMLElement>(animation: ScrollAnimation) => {
   const containerRef = useRef<T | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = containerRef.current
 
     if (!element) {
