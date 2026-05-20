@@ -2,7 +2,7 @@
 
 > **Purpose**: This is a **reusable master prompt** for AI coding agents. Feed this document to any LLM/agent to build the complete Dog Tinder landing page from scratch. It serves as a benchmark to test the latest released LLM capabilities — evaluating visual fidelity, animation quality, code architecture, and attention to detail.
 
-> **Version**: 1.0
+> **Version**: 1.1
 > **Last Updated**: 2026-05-20
 > **Tech Stack**: React 19 + Tailwind CSS 4 + Vite + GSAP + ScrollTrigger
 
@@ -21,6 +21,7 @@
 9. [Performance Optimization Rules](#9-performance-optimization-rules)
 10. [Responsiveness & Breakpoints](#10-responsiveness--breakpoints)
 11. [Acceptance Criteria Checklist](#11-acceptance-criteria-checklist)
+12. [Benchmark Replication Notes](#12-benchmark-replication-notes)
 
 ---
 
@@ -50,6 +51,18 @@
 - Custom animated loading/splash screen
 - AI-generated dog images (use placeholder URLs if image generation is unavailable)
 - NO Three.js / R3F — pure GSAP + CSS animations only
+
+### Benchmark Replication Contract
+
+This prompt is not just a product brief. It is the artifact being tested. A fresh AI agent should be able to build the same polished PawMatch landing page from this document alone.
+
+Treat these requirements as non-negotiable:
+- Build the actual single-page app experience immediately, not a marketing placeholder or generic dog-themed page.
+- Preserve the final polished interaction model: interactive infinite hero cards, distance-based smooth app-bar scrolling, balanced gallery grid, autoplay testimonials, reversible scroll reveals, and no animation flicker.
+- The README must explain both the PawMatch app and the larger benchmark purpose: the main deliverable is this prompt, used to test LLM plan execution and software-development capability.
+- The favicon/logo in `index.html` must match the PawMatch paw logo used in the app bar.
+- Footer social links must use recognizable actual social media icons for Facebook, Instagram, X/Twitter, and TikTok, even if the links are empty placeholders.
+- Avoid ambiguous "nice animation" interpretations. If a motion detail is specified below, implement that exact behavior and verify it in the browser.
 
 ---
 
@@ -468,7 +481,9 @@ Each widget (section) is a self-contained block. Every widget must:
 - Starts with slight transparency, transitions to full glassmorphism on scroll (after 50px)
 - On scroll down: shrinks height from 80px → 64px, adds subtle shadow
 - Navigation links highlight the currently visible section (Intersection Observer)
-- Smooth scroll to section on click
+- App-bar links use custom distance-based smooth scrolling, not plain anchor jumps or native `behavior: "smooth"` alone. When jumping from section 1 to section 5, the viewport must visibly scroll through sections 2, 3, and 4 instead of teleporting.
+- Smooth scroll implementation details: header offset ~92px, duration scales by distance, clamp duration between ~760ms and ~2400ms, use `requestAnimationFrame` + `easeInOutCubic`, cancel an in-flight scroll before starting a new one, and respect `prefers-reduced-motion: reduce` by jumping directly.
+- Disable global CSS `html { scroll-behavior: smooth; }` if it conflicts with the custom scroller.
 - Mobile (<768px): hamburger icon replaces center links, opens slide-in drawer from right
 
 **Glassmorphism**:
@@ -495,11 +510,16 @@ Each widget (section) is a self-contained block. Every widget must:
 - Social proof: row of overlapping dog avatar circles (5 avatars) + "50,000+ matches made" — slides in last
 
 **Right Side — Swipe Card Stack** (`SwipeCardStack`):
-- 3 stacked cards with slight rotation and offset (like a fanned deck)
+- Infinite interactive card stack with 5 visible cards, slight rotation and offset (like a fanned deck)
 - Each card shows: dog photo (top 60%), dog name + breed + age (bottom 40%), heart and X buttons
-- Auto-swipe animation: every 3 seconds, the top card swipes right with rotation (15°), revealing the card below. New card slides in from bottom
+- No hero auto-swipe timer. The user controls the deck by pressing X/pass or heart/like.
+- Interaction must feel continuous: when the user clicks like or pass, immediately promote the next card underneath while the outgoing card remains as a temporary overlay and animates away. Do not wait for the heart animation to finish before showing the next card.
+- Like behavior: outgoing card swipes right with rotation (~18°) while a pure heart icon appears at the center and expands outward to roughly 70-80% of the image height before fading. The heart must be only the icon, with no circular outline, no pill, no button chrome.
+- Pass/dislike behavior: outgoing card swipes left with rotation (~-18°). No icon, no X burst, and no center feedback.
+- Buttons are disabled only for the short outgoing-card animation window (~700ms) to avoid double taps corrupting the stack.
 - Cards have rounded corners (1.5rem), white background (light) / neutral-800 (dark), subtle shadow
 - On hover: stack spreads slightly (more offset between cards)
+- Use an `exitingCard` state/model (or equivalent) so the outgoing card and next-card promotion run in sync. This is the key detail that prevents the deck from feeling like it hangs for a split second.
 
 **Floating Particles** (`FloatingParticles`):
 - 15-20 small elements: hearts (♥), paw prints (🐾), sparkles (✨)
@@ -517,8 +537,14 @@ t=1.0s  → Subheadline fades in (opacity 0→1, y: 20→0)
 t=1.3s  → CTA buttons spring up (y: 40→0, scale: 0.8→1, ease: "back.out(1.7)")
 t=1.6s  → Social proof slides in (x: -30→0, opacity 0→1)
 t=1.0s  → Card stack assembles (cards scale in from 0, stagger 0.15s)
-t=1.5s  → Card auto-swipe loop begins
+t=1.5s  → Interactive card deck is ready; no auto-swipe begins
 ```
+
+**Hero Flicker Guardrails**:
+- Hero text, proof row, CTA buttons, and card stack must not render visible first and then disappear when GSAP starts. Start animated elements from hidden/offset state before the first visible paint.
+- Use `useLayoutEffect` (or an isomorphic layout effect) for the hero entrance timeline.
+- Do not leave persistent CSS classes such as `translate-y-full` on headline words after the GSAP reveal. If using transform setup, set the initial `yPercent` via GSAP and tween it back to `0` so the heading remains visible.
+- Verify the first viewport after load: the main heading "Find Your Dog's Perfect Match" must be visible and must not flicker.
 
 ---
 
@@ -539,7 +565,7 @@ t=1.5s  → Card auto-swipe loop begins
 - Stagger: 0.2s delay between each card
 - Step number circles fill with gradient (border-only → filled) as each card reveals
 - Icons bounce in with `ease: "elastic.out(1, 0.3)"`
-- ScrollTrigger: `start: "top 75%"`, `toggleActions: "play none none none"`
+- ScrollTrigger: `start: "top 75%"`, `toggleActions: "play reverse play reverse"`
 
 ---
 
@@ -572,23 +598,23 @@ t=1.5s  → Card auto-swipe loop begins
 
 ### 6.6 Dog Breed Gallery (`BreedGallerySection`)
 
-**Visual**: Masonry grid layout showing dog breed photos. Responsive columns: 4 columns (desktop), 3 (tablet), 2 (mobile). Each card shows a dog photo with breed name overlay on hover.
+**Visual**: Balanced uniform image grid showing dog portraits. Responsive columns: 4 columns (desktop), 3 (tablet), 2 (mobile). Each card uses a stable aspect ratio so the grid fills cleanly with no masonry gaps, no missing-looking cells, and no awkward tall cards.
 
-**Breed Data** (10-12 breeds):
-Golden Retriever, French Bulldog, Labrador, Corgi, Husky, Poodle, German Shepherd, Beagle, Samoyed, Shiba Inu, Dalmatian, Pomeranian
+**Breed Data** (8 cards minimum, 8 is acceptable):
+Use named dog profiles rather than anonymous breed tiles. Include a name, breed, image, match percent, and image crop position for each card. Example set: Luna (Golden Retriever), Mochi (Corgi), Atlas (Husky), Noodle (Dachshund), Poppy (Poodle Mix), Scout (Border Collie), Bean (French Bulldog), Hazel (Shiba Inu).
 
-**Images**: Use AI-generated dog images. If image generation is unavailable, use placeholder URLs: `https://placedog.net/500/[height]?id=[n]` with varying heights (300-500px) for masonry effect.
+**Images**: Use cohesive AI-generated dog portraits or a single dog portrait sheet with crop positions. Portraits should look premium, face-forward, bright, and inspectable, preferably with bandanas or playful accessories. Do not use stretched placeholders, dark cropped stock, or inconsistent aspect ratios.
 
 **Scroll Animation**:
-- Cards stagger in from bottom with random slight rotation: `y: 60 → 0`, `rotate: random(-3, 3) → 0`, `opacity: 0 → 1`
-- Stagger: 0.08s between cards (fast cascade effect)
-- ScrollTrigger: `start: "top 80%"`
+- Cards reveal in visible reading order with a staggered cascade: `y: 80 → 0`, `rotate: -2 → 0`, `opacity: 0 → 1`
+- Duration: ~0.72s, ease: `power3.out`, stagger each card by ~0.09s from `start`
+- Trigger the animation from the actual image grid, not the whole section. Use `ScrollTrigger` with the grid as trigger and `start: "top 78%"` so the user can actually see the stagger while scrolling.
+- Use reversible scroll behavior: `toggleActions: "play reverse play reverse"`
 
 **Hover Interactions**:
-- Image scales up slightly: `scale(1.08)` with overflow hidden on container
-- Gradient overlay slides up from bottom (transparent → primary gradient at 60% opacity)
-- Breed name text slides up into view (from below the card) in bold white
-- 3D tilt: subtle tilt toward cursor (max ±5°)
+- Image scales up slightly: `scale(1.05-1.08)` with overflow hidden on container
+- Gradient overlay stays readable at the bottom so name, breed, and match percentage are always legible
+- 3D tilt is optional; if implemented, keep it subtle (max ±5°)
 - Transition: 0.4s ease
 
 ---
@@ -609,18 +635,19 @@ Golden Retriever, French Bulldog, Labrador, Corgi, Husky, Poodle, German Shepher
 ```
 
 **Carousel Behavior**:
-- Auto-plays: slides every 4 seconds
+- Auto-plays: slides every 5 seconds
 - Shows 1 card on mobile, 2 on tablet, 3 on desktop
-- Infinite loop (GSAP horizontal scroll)
+- Loop from the last valid starting position back to the first
 - Pause auto-play on hover
-- Navigation dots below indicating current position
-- Swipe gesture support on mobile
+- Do not render previous/next arrow controls. The carousel should feel calm and automatic, not like a control-heavy widget.
+- Navigation dots are optional; if included, keep them small and visually quiet. The final polished version can omit visible controls entirely.
+- Swipe gesture support on mobile is optional if autoplay and responsive card counts work correctly.
 
 **Scroll Animation**:
 - Section heading reveals first
 - Cards slide in from the right as a group: `x: 100 → 0`, `opacity: 0 → 1`
 - Star ratings animate in with stagger (each star pops with scale bounce)
-- Quote text types out character-by-character (CSS `steps()` animation)
+- Do not use a typewriter effect if it makes the carousel feel busy or delays reading. Prefer stable quote text with animated stars.
 
 **Card Design**:
 - Rounded corners (1rem), subtle shadow, glass effect in dark mode
@@ -762,10 +789,10 @@ export const createScrollReveal = (element, options = {}) => {
     scrollTrigger: {
       trigger: element,
       start: 'top 75%',
-      toggleActions: 'play none none none',
+      toggleActions: 'play reverse play reverse',
     },
   };
-  return gsap.from(element, { ...defaults, ...options });
+  return gsap.fromTo(element, { y: defaults.y, opacity: 0 }, { ...defaults, ...options, y: 0, opacity: 1 });
 };
 
 export { gsap, ScrollTrigger };
@@ -775,16 +802,20 @@ export { gsap, ScrollTrigger };
 
 ```js
 // src/shared/hooks/useScrollTrigger.js
-import { useRef, useEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
 import { gsap, ScrollTrigger } from '@shared/lib/gsapConfig';
 
 export const useScrollTrigger = (animationFn, deps = []) => {
   const containerRef = useRef(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+
     const ctx = gsap.context(() => {
       animationFn(containerRef.current, gsap, ScrollTrigger);
     }, containerRef);
+
+    ScrollTrigger.refresh();
 
     return () => ctx.revert();
   }, deps);
@@ -792,6 +823,60 @@ export const useScrollTrigger = (animationFn, deps = []) => {
   return containerRef;
 };
 ```
+
+### Custom Smooth Scroll Hook
+
+Navbar and CTA navigation must use a custom scroller so long jumps visibly travel through intermediate sections.
+
+```js
+// src/features/smooth-scroll/useSmoothScroll.js
+let activeScrollFrame = null;
+
+const easeInOutCubic = (progress) =>
+  progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+const getScrollDuration = (distance) => Math.min(Math.max(Math.abs(distance) * 0.46, 760), 2400);
+
+const scrollToPosition = (targetTop) => {
+  const startTop = window.scrollY;
+  const maxTop = document.documentElement.scrollHeight - window.innerHeight;
+  const finalTop = Math.max(0, Math.min(targetTop, maxTop));
+  const distance = finalTop - startTop;
+
+  if (Math.abs(distance) < 2) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.scrollTo(0, finalTop);
+    return;
+  }
+
+  if (activeScrollFrame !== null) window.cancelAnimationFrame(activeScrollFrame);
+
+  const duration = getScrollDuration(distance);
+  const startedAt = window.performance.now();
+
+  const step = (timestamp) => {
+    const progress = Math.min((timestamp - startedAt) / duration, 1);
+    window.scrollTo(0, startTop + distance * easeInOutCubic(progress));
+
+    if (progress < 1) activeScrollFrame = window.requestAnimationFrame(step);
+    else activeScrollFrame = null;
+  };
+
+  activeScrollFrame = window.requestAnimationFrame(step);
+};
+
+export const useSmoothScroll = () => {
+  const scrollToId = (id) => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    scrollToPosition(section.getBoundingClientRect().top + window.scrollY - 92);
+  };
+
+  return { scrollToId, scrollToTop: () => scrollToPosition(0) };
+};
+```
+
+Also set `html { scroll-behavior: auto; scroll-padding-top: 6rem; }` to avoid native smooth scrolling fighting this animation.
 
 ### Animation Easing Reference
 
@@ -1012,25 +1097,26 @@ Use this checklist to verify the build is complete and meets all requirements:
 - [ ] All sections render correctly in both light and dark themes
 - [ ] Theme toggle has animated sun/moon SVG morph
 
-### Sections (8 total)
+### Sections (10 total)
 - [ ] Loading Screen — paw animation + progress bar + fade-out dismiss
-- [ ] Navbar — glassmorphic, shrink on scroll, active section highlight, mobile drawer
-- [ ] Hero — headline text reveal, swipe card stack with auto-swipe, floating particles, CTAs
+- [ ] Navbar — glassmorphic, shrink on scroll, active section highlight, mobile drawer, custom distance-based smooth scrolling
+- [ ] Hero — no-flicker headline text reveal, interactive infinite swipe card stack, synchronized like/pass exit animations, floating particles, CTAs
 - [ ] How It Works — 4 step cards, staggered flip-in, connecting line draw, icon bounce
 - [ ] Features — 6 feature cards, 3D tilt on hover, staggered scroll reveal, icon pulse
-- [ ] Breed Gallery — masonry grid, hover tilt + overlay, staggered cascade reveal
-- [ ] Testimonials — auto-playing carousel, parallax photos, typing quote, star ratings
+- [ ] Breed Gallery — balanced uniform grid, no gaps, readable overlays, ordered staggered cascade reveal triggered from the grid
+- [ ] Testimonials — auto-playing 5s carousel, responsive visible count, pauses on hover, no heavy controls
 - [ ] Pricing — 3 glassmorphic cards, monthly/yearly toggle, price animation, popular highlight
 - [ ] FAQ — accordion with smooth expand/collapse, rotate toggle icon, stagger reveal
-- [ ] Footer — 4-column layout, newsletter signup, social icons, gradient hover effects
+- [ ] Footer — 4-column layout, newsletter signup, actual social media icons, gradient hover effects
 
 ### Animations
 - [ ] GSAP ScrollTrigger wired to every section
-- [ ] Hero entrance timeline plays after loading screen
-- [ ] All scroll reveals use consistent easing and timing from spec
+- [ ] Hero entrance timeline plays after loading screen without first-paint flicker
+- [ ] App-bar navigation scrolls through intermediate sections instead of teleporting
+- [ ] All scroll reveals use consistent easing, reversible toggle actions, and timing from spec
 - [ ] Hover interactions implemented on all interactive cards
 - [ ] CSS particle system running in hero background
-- [ ] Swipe card auto-animation loops correctly
+- [ ] Hero card like/pass animations promote the next card immediately while the outgoing card exits
 - [ ] Pricing toggle animates price numbers and "Save" badges
 - [ ] FAQ accordion has smooth height + opacity animation
 - [ ] Testimonial carousel auto-plays and pauses on hover
@@ -1059,6 +1145,53 @@ Use this checklist to verify the build is complete and meets all requirements:
 - [ ] Components are reusable and accept appropriate props
 - [ ] Custom hooks extract reusable logic
 - [ ] No unused imports or dead code
+
+### Benchmark Documentation
+- [ ] README introduces PawMatch clearly as the built app
+- [ ] README explicitly explains that the primary artifact is `DOG_TINDER_MASTER_PROMPT.md`, intended to test LLM plan execution and software-development capability
+- [ ] README encourages users to feed the master prompt to another LLM/agent to generate the entire app from scratch
+- [ ] README records the final UI/UX expectations closely enough that future testers can compare results
+- [ ] `index.html` favicon uses the same PawMatch paw-logo concept as the app bar
+
+---
+
+## 12. BENCHMARK REPLICATION NOTES
+
+Use this section as the final sanity pass before handing the result back. These are the items most likely to diverge when a new agent interprets the prompt from scratch.
+
+### Final UI/UX Decisions To Preserve
+
+| Surface | Final Required Behavior |
+|---------|-------------------------|
+| Hero heading | Reveals after loading with no first-paint flicker and remains visible after animation |
+| Hero card deck | User-driven infinite deck, 5 visible stacked cards, no auto-swipe timer |
+| Like action | Outgoing card swipes right while a pure heart icon expands from center and fades |
+| Pass action | Outgoing card swipes left, with no center icon or burst |
+| Deck sync | Next card promotes immediately while outgoing card is still animating |
+| App-bar navigation | Custom distance-based scroll that visibly travels through intermediate sections |
+| Gallery | Uniform balanced grid, no masonry gaps, ordered stagger reveal triggered from the image grid |
+| Testimonials | Calm autoplay every 5 seconds, pause on hover, no arrow-control chrome |
+| Motion system | Reversible scroll reveals, no content visible-before-hidden flicker |
+| Brand polish | PawMatch paw logo used consistently in app bar and favicon; real social icons in footer |
+
+### Common Failure Modes To Avoid
+
+- Do not let hero text render, disappear, and animate back in. Start hidden before paint.
+- Do not leave the hero headline stuck off-screen because an initial transform class remains after GSAP.
+- Do not make the hero cards wait for the heart animation before advancing the deck.
+- Do not use masonry row spans in the gallery; it creates gaps and missing-looking cells.
+- Do not trigger gallery animation from the section top if the heading consumes the viewport; trigger from the grid itself.
+- Do not rely on native anchor scrolling for long navigation jumps; it often feels like a teleport.
+- Do not add testimonial arrow controls once autoplay is short enough.
+- Do not treat `DOG_TINDER_MASTER_PROMPT.md` as secondary documentation. This prompt is the benchmark artifact.
+
+### Suggested Agent Workflow
+
+1. Read this entire prompt once before coding.
+2. Build the app in the specified architecture.
+3. Run typecheck, lint, and production build.
+4. Open the app in a real browser and verify: first viewport, hero card like/pass, app-bar jump from hero to pricing, gallery reveal timing, testimonial autoplay, mobile drawer, light/dark theme.
+5. Update README with the PawMatch intro and the LLM benchmark/prompt-reuse purpose.
 
 ---
 
