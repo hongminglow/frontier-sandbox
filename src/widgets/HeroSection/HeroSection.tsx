@@ -22,13 +22,14 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
     }
 
     const context = gsap.context(() => {
+      gsap.set('.hero-word', { yPercent: 105 })
+
       gsap
         .timeline()
         .fromTo('.hero-eyebrow', { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45 })
-        .fromTo(
+        .to(
           '.hero-word',
-          { yPercent: 105 },
-          { yPercent: 0, stagger: 0.15, duration: 0.75, ease: 'power3.out', immediateRender: false },
+          { yPercent: 0, stagger: 0.15, duration: 0.75, ease: 'power3.out' },
           '-=0.1',
         )
         .fromTo(
@@ -75,10 +76,10 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
           </p>
           <h1 className="font-heading text-5xl font-extrabold leading-[1.02] text-[var(--text-primary)] sm:text-6xl lg:text-7xl">
             <span className="block overflow-hidden">
-              <span className="hero-word inline-block translate-y-full">Find Your Dog&apos;s</span>
+              <span className="hero-word inline-block">Find Your Dog&apos;s</span>
             </span>
             <span className="block overflow-hidden">
-              <span className="hero-word inline-block translate-y-full">
+              <span className="hero-word inline-block">
                 <GradientText>Perfect Match</GradientText>
               </span>
             </span>

@@ -12,7 +12,12 @@ export const BreedGallerySection = ({ id }: { id: string }) => {
         y: 0,
         rotate: 0,
         autoAlpha: 1,
-        stagger: 0.07,
+        duration: 0.72,
+        ease: 'power3.out',
+        stagger: {
+          each: 0.09,
+          from: 'start',
+        },
         scrollTrigger: {
           trigger: element,
           start: 'top 70%',
