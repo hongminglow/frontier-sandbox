@@ -1,0 +1,1 @@
+export { BreedGallerySection } from './BreedGallerySection'
