@@ -2,7 +2,7 @@
 
 > **Purpose**: This is a **reusable master prompt** for AI coding agents. Feed this document to any LLM/agent to build the complete Dog Tinder landing page from scratch. It serves as a benchmark to test the latest released LLM capabilities — evaluating visual fidelity, animation quality, code architecture, and attention to detail.
 
-> **Version**: 1.1
+> **Version**: 1.3
 > **Last Updated**: 2026-05-20
 > **Tech Stack**: React 19 + Tailwind CSS 4 + Vite + GSAP + ScrollTrigger
 
@@ -466,6 +466,7 @@ Each widget (section) is a self-contained block. Every widget must:
 **Animation Details**:
 - Paw icon: alternating Y-translate bounce (-10px) with slight rotation (±5°), 0.6s per step
 - Progress bar: linear fill with gradient shimmer overlay (left-to-right)
+- Progress contrast: the unfilled track and filled indicator must be clearly distinguishable against the brand gradient at all progress values. Use a solid high-contrast fill (for example white or a bright warm accent) with the shimmer as an overlay/pseudo-element; do not let the shimmer replace the fill with a low-opacity same-hue gradient.
 - Dismiss: 0.5s scale(1.05) + opacity(0) with `ease-in` easing
 
 ---
@@ -505,6 +506,7 @@ Each widget (section) is a self-contained block. Every widget must:
 **Left Side Content**:
 - Eyebrow text: "🐾 #1 Dog Matching App" — fades in first
 - Headline: "Find Your Dog's\n**Perfect Match**" — "Perfect Match" in gradient text. Each word reveals with clip-path animation (bottom-to-top wipe), staggered 0.15s
+- Hero H1 visibility contract: the first viewport must show the complete headline text exactly as readable words: `Find Your Dog's` on the first line and `Perfect Match` on the second line. The gradient is applied only to the letterforms of `Perfect Match` using `background-clip: text` / `-webkit-background-clip: text`; never render a plain gradient rectangle, empty block, mask bar, or placeholder where the words should be. After the reveal animation completes, clear or settle any `opacity`, `clip-path`, `transform`, and `-webkit-text-fill-color` values so the H1 remains visible.
 - Subheadline: "Swipe, match, and schedule playdates for your furry best friend. Join 50,000+ happy dogs already matched." — fades in after headline
 - CTA buttons: "Start Matching — It's Free" (primary gradient) + "Watch How It Works" (ghost/outline) — slide up with spring animation
 - Social proof: row of overlapping dog avatar circles (5 avatars) + "50,000+ matches made" — slides in last
@@ -515,6 +517,7 @@ Each widget (section) is a self-contained block. Every widget must:
 - No hero auto-swipe timer. The user controls the deck by pressing X/pass or heart/like.
 - Interaction must feel continuous: when the user clicks like or pass, immediately promote the next card underneath while the outgoing card remains as a temporary overlay and animates away. Do not wait for the heart animation to finish before showing the next card.
 - Like behavior: outgoing card swipes right with rotation (~18°) while a pure heart icon appears at the center and expands outward to roughly 70-80% of the image height before fading. The heart must be only the icon, with no circular outline, no pill, no button chrome.
+- Heart feedback visibility contract: the heart feedback must be visibly obvious when pressing the hero Like button. Render it as an absolute overlay above the swipe deck, not as part of the Like button and not clipped or faded out by the outgoing card before it can be seen. It should remain perceptible for at least ~350ms while scaling/fading.
 - Pass/dislike behavior: outgoing card swipes left with rotation (~-18°). No icon, no X burst, and no center feedback.
 - Buttons are disabled only for the short outgoing-card animation window (~700ms) to avoid double taps corrupting the stack.
 - Cards have rounded corners (1.5rem), white background (light) / neutral-800 (dark), subtle shadow
@@ -600,16 +603,20 @@ t=1.5s  → Interactive card deck is ready; no auto-swipe begins
 
 **Visual**: Balanced uniform image grid showing dog portraits. Responsive columns: 4 columns (desktop), 3 (tablet), 2 (mobile). Each card uses a stable aspect ratio so the grid fills cleanly with no masonry gaps, no missing-looking cells, and no awkward tall cards.
 
+**Scope**: This is a static gallery section, not a filterable catalog. Do not add category chips, breed filter tabs, search controls, sorting controls, or an "All / breed" filter row unless explicitly requested in a later prompt. Extra controls make the benchmark output diverge and distract from the required scroll reveal.
+
 **Breed Data** (8 cards minimum, 8 is acceptable):
 Use named dog profiles rather than anonymous breed tiles. Include a name, breed, image, match percent, and image crop position for each card. Example set: Luna (Golden Retriever), Mochi (Corgi), Atlas (Husky), Noodle (Dachshund), Poppy (Poodle Mix), Scout (Border Collie), Bean (French Bulldog), Hazel (Shiba Inu).
 
-**Images**: Use cohesive AI-generated dog portraits or a single dog portrait sheet with crop positions. Portraits should look premium, face-forward, bright, and inspectable, preferably with bandanas or playful accessories. Do not use stretched placeholders, dark cropped stock, or inconsistent aspect ratios.
+**Images**: Use cohesive AI-generated dog portraits or a single dog portrait sheet with crop positions. Portraits should look premium, face-forward, bright, and inspectable, preferably with bandanas or playful accessories. Do not use stretched placeholders, dark cropped stock, landscapes, mountains, roads, scenery, or inconsistent aspect ratios. Every gallery and hero card image must visibly contain a dog as the main subject.
 
 **Scroll Animation**:
 - Cards reveal in visible reading order with a staggered cascade: `y: 80 → 0`, `rotate: -2 → 0`, `opacity: 0 → 1`
 - Duration: ~0.72s, ease: `power3.out`, stagger each card by ~0.09s from `start`
 - Trigger the animation from the actual image grid, not the whole section. Use `ScrollTrigger` with the grid as trigger and `start: "top 78%"` so the user can actually see the stagger while scrolling.
 - Use reversible scroll behavior: `toggleActions: "play reverse play reverse"`
+- Initial visibility contract: before the grid trigger starts, gallery cards must be hidden (`opacity: 0` with the translated/rotated start transform) so they do not all appear on initial render. If using the custom `useScrollTrigger` hook, the returned ref must be attached to a real section/grid wrapper; an unattached hook means the animation never initializes and fails this requirement.
+- First-paint requirement: the hidden state must exist before the browser paints the gallery, either via CSS initial classes or a `useLayoutEffect`/GSAP setup on an attached ref. A normal `useEffect` that runs after paint and briefly shows all cards fails this benchmark.
 
 **Hover Interactions**:
 - Image scales up slightly: `scale(1.05-1.08)` with overflow hidden on container
@@ -642,6 +649,7 @@ Use named dog profiles rather than anonymous breed tiles. Include a name, breed,
 - Do not render previous/next arrow controls. The carousel should feel calm and automatic, not like a control-heavy widget.
 - Navigation dots are optional; if included, keep them small and visually quiet. The final polished version can omit visible controls entirely.
 - Swipe gesture support on mobile is optional if autoplay and responsive card counts work correctly.
+- Autoplay verification: without hovering, a visible slide change must occur within about 6 seconds of the carousel becoming interactive. The timer should not be reset every render. When 2 or 3 cards are visible, translate by the card slot width and loop at `testimonialData.length - visibleCount`, not by full-track pages that skip or overshoot valid positions.
 
 **Scroll Animation**:
 - Section heading reveals first
@@ -697,6 +705,7 @@ Use named dog profiles rather than anonymous breed tiles. Include a name, breed,
 - Popular card animates slightly after the others for emphasis
 - Stagger: 0.15s
 - ScrollTrigger: `start: "top 70%"`
+- Trigger stability: trigger the pricing reveal from the pricing card grid or full pricing section, not the small billing toggle wrapper. The cards must stay visible while the pricing section is centered in the viewport; do not reverse/fade out during normal forward scrolling until the section has actually left the viewport. If using reversible behavior, reverse only when scrolling back above the reveal point or after the full section exits.
 
 **Hover Interactions**:
 - Card lifts: `translateY(-8px)` with increased shadow
@@ -746,6 +755,12 @@ Use named dog profiles rather than anonymous breed tiles. Include a name, breed,
 3. **Company Links**: About Us, Careers, Press, Contact, Partners
 4. **Legal Links**: Privacy Policy, Terms of Service, Cookie Policy, GDPR
 
+**Desktop Layout Contract**:
+- Footer content must sit inside `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` with generous spacing.
+- Newsletter signup is a full-width strip above the four link columns, not squeezed into one column beside them.
+- The footer columns use a real responsive grid with clear gaps, for example `grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 lg:gap-14`.
+- Text, links, inputs, and buttons must never overlap, truncate awkwardly, or compress into unreadable fragments on desktop or mobile.
+
 **Bottom Bar**: Copyright "© 2026 PawMatch. All rights reserved. Made with ❤️ for dogs everywhere."
 
 **Newsletter Signup** (above the columns):
@@ -753,6 +768,13 @@ Use named dog profiles rather than anonymous breed tiles. Include a name, breed,
 - "Join 50,000+ dog lovers" heading
 - Email input + "Subscribe" button inline
 - Input has glass effect styling
+- The Subscribe button must show the full label `Subscribe` at all breakpoints. Give it a fixed/min width and `flex-shrink: 0`; let the input shrink or wrap before the button label is clipped.
+- On small screens, stack the input and button vertically if needed rather than squeezing the label.
+
+**Social Icon Contract**:
+- Use recognizable brand logo icons for Instagram, X/Twitter, Facebook, and TikTok. Inline SVG brand marks are acceptable. Installing a small icon package is acceptable if desired.
+- Do not use plain initials such as `I`, `T`, `F`, `T`, generic circles with letters, random symbols, or unrelated icons as social media icons.
+- Each social link must have an accessible `aria-label` with the platform name.
 
 **Interactions**:
 - Social icons: scale(1.2) + gradient color fill on hover
@@ -1098,16 +1120,16 @@ Use this checklist to verify the build is complete and meets all requirements:
 - [ ] Theme toggle has animated sun/moon SVG morph
 
 ### Sections (10 total)
-- [ ] Loading Screen — paw animation + progress bar + fade-out dismiss
+- [ ] Loading Screen — paw animation + high-contrast progress bar + fade-out dismiss
 - [ ] Navbar — glassmorphic, shrink on scroll, active section highlight, mobile drawer, custom distance-based smooth scrolling
-- [ ] Hero — no-flicker headline text reveal, interactive infinite swipe card stack, synchronized like/pass exit animations, floating particles, CTAs
+- [ ] Hero — no-flicker headline text reveal, complete H1 text visible after animation, no gradient rectangle replacing text, interactive infinite swipe card stack, synchronized like/pass exit animations, clearly visible center heart feedback on Like, floating particles, CTAs
 - [ ] How It Works — 4 step cards, staggered flip-in, connecting line draw, icon bounce
 - [ ] Features — 6 feature cards, 3D tilt on hover, staggered scroll reveal, icon pulse
-- [ ] Breed Gallery — balanced uniform grid, no gaps, readable overlays, ordered staggered cascade reveal triggered from the grid
-- [ ] Testimonials — auto-playing 5s carousel, responsive visible count, pauses on hover, no heavy controls
-- [ ] Pricing — 3 glassmorphic cards, monthly/yearly toggle, price animation, popular highlight
+- [ ] Breed Gallery — balanced uniform grid, no gaps, readable overlays, no filter controls, ordered staggered cascade reveal triggered from the grid, cards hidden before trigger
+- [ ] Testimonials — auto-playing 5s carousel, responsive visible count, visible movement within ~6s, pauses on hover, no heavy controls
+- [ ] Pricing — 3 glassmorphic cards, monthly/yearly toggle, price animation, popular highlight, does not fade out while centered in viewport
 - [ ] FAQ — accordion with smooth expand/collapse, rotate toggle icon, stagger reveal
-- [ ] Footer — 4-column layout, newsletter signup, actual social media icons, gradient hover effects
+- [ ] Footer — spacious 4-column layout, full-width newsletter strip, Subscribe label fully visible, actual recognizable social media icons, gradient hover effects
 
 ### Animations
 - [ ] GSAP ScrollTrigger wired to every section
@@ -1163,26 +1185,37 @@ Use this section as the final sanity pass before handing the result back. These 
 
 | Surface | Final Required Behavior |
 |---------|-------------------------|
-| Hero heading | Reveals after loading with no first-paint flicker and remains visible after animation |
+| Hero heading | Reveals after loading with no first-paint flicker, shows the full readable `Find Your Dog's` / `Perfect Match` text, and remains visible after animation |
 | Hero card deck | User-driven infinite deck, 5 visible stacked cards, no auto-swipe timer |
 | Like action | Outgoing card swipes right while a pure heart icon expands from center and fades |
 | Pass action | Outgoing card swipes left, with no center icon or burst |
 | Deck sync | Next card promotes immediately while outgoing card is still animating |
 | App-bar navigation | Custom distance-based scroll that visibly travels through intermediate sections |
-| Gallery | Uniform balanced grid, no masonry gaps, ordered stagger reveal triggered from the image grid |
+| Gallery | Uniform balanced grid, no filter controls, no masonry gaps, ordered stagger reveal triggered from the image grid |
 | Testimonials | Calm autoplay every 5 seconds, pause on hover, no arrow-control chrome |
 | Motion system | Reversible scroll reveals, no content visible-before-hidden flicker |
-| Brand polish | PawMatch paw logo used consistently in app bar and favicon; real social icons in footer |
+| Brand polish | PawMatch paw logo used consistently in app bar and favicon; real social icons in footer; no placeholder initials |
 
 ### Common Failure Modes To Avoid
 
+- Do not make the loading progress track and filled indicator nearly the same color or opacity; the moving fill must be obvious against the splash gradient.
 - Do not let hero text render, disappear, and animate back in. Start hidden before paint.
 - Do not leave the hero headline stuck off-screen because an initial transform class remains after GSAP.
+- Do not render the second H1 line as a solid gradient rectangle. `Perfect Match` must be actual visible gradient text, not a background block, mask, or empty animated bar.
+- Do not use `text-transparent` unless the same element also has a valid text-clipped gradient background in every browser target.
+- Do not use landscape/scenery photos for dog cards. Every hero and gallery card image must visibly feature a dog.
 - Do not make the hero cards wait for the heart animation before advancing the deck.
+- Do not hide the Like heart feedback inside the button, behind a card, inside a clipped image area, or inside a parent that fades/moves it away before it is visible.
+- Do not add gallery filter chips/tabs/search/sort controls; the required gallery is a static image grid.
+- Do not render the gallery cards visible before their grid-triggered stagger reveal begins.
 - Do not use masonry row spans in the gallery; it creates gaps and missing-looking cells.
 - Do not trigger gallery animation from the section top if the heading consumes the viewport; trigger from the grid itself.
 - Do not rely on native anchor scrolling for long navigation jumps; it often feels like a teleport.
 - Do not add testimonial arrow controls once autoplay is short enough.
+- Do not let carousel autoplay silently fail; verify an automatic slide change is visible within about 6 seconds without hover.
+- Do not trigger pricing reveal from a tiny child element that leaves the viewport while the pricing cards are still centered; cards should not fade out mid-section.
+- Do not use letter placeholders for social links. Footer social icons must be recognizable Instagram, X/Twitter, Facebook, and TikTok marks.
+- Do not squeeze the footer newsletter form until the Subscribe label is clipped; stack or resize the layout instead.
 - Do not treat `DOG_TINDER_MASTER_PROMPT.md` as secondary documentation. This prompt is the benchmark artifact.
 
 ### Suggested Agent Workflow
@@ -1190,7 +1223,7 @@ Use this section as the final sanity pass before handing the result back. These 
 1. Read this entire prompt once before coding.
 2. Build the app in the specified architecture.
 3. Run typecheck, lint, and production build.
-4. Open the app in a real browser and verify: first viewport, hero card like/pass, app-bar jump from hero to pricing, gallery reveal timing, testimonial autoplay, mobile drawer, light/dark theme.
+4. Open the app in a real browser and verify: first viewport H1 shows the complete readable headline with no gradient block, hero card like/pass, app-bar jump from hero to pricing, gallery has no filter row and reveals in order while scrolling, testimonial autoplay, footer spacing/social icons/newsletter button, mobile drawer, light/dark theme.
 5. Update README with the PawMatch intro and the LLM benchmark/prompt-reuse purpose.
 
 ---
