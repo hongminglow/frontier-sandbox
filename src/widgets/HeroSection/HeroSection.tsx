@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { Button, GradientText } from '@shared/ui'
 import { useSmoothScroll } from '@features/smooth-scroll'
 import { dogProfiles } from '@entities/dog'
@@ -16,19 +16,12 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
   const sectionRef = useRef<HTMLElement | null>(null)
   const { scrollToId } = useSmoothScroll()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!ready || !sectionRef.current) {
       return
     }
 
     const context = gsap.context(() => {
-      gsap.set(['.hero-copy', '.hero-actions', '.hero-proof', '.hero-stack'], {
-        autoAlpha: 1,
-        x: 0,
-        y: 0,
-        rotate: 0,
-      })
-
       gsap
         .timeline()
         .fromTo('.hero-eyebrow', { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45 })
@@ -76,24 +69,24 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
       <FloatingParticles />
       <div className="section-shell relative z-10 grid min-h-[calc(94svh-7rem)] items-center gap-10 pb-14 lg:grid-cols-[1.02fr_0.98fr]">
         <div className="max-w-3xl">
-          <p className="hero-eyebrow mb-5 inline-flex min-h-9 items-center gap-2 rounded-full border border-primary-200 bg-white/70 px-4 text-sm font-bold text-primary-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-100">
+          <p className="hero-eyebrow mb-5 inline-flex min-h-9 translate-y-4 items-center gap-2 rounded-full border border-primary-200 bg-white/70 px-4 text-sm font-bold text-primary-600 opacity-0 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-100">
             <span aria-hidden="true">🐾</span>
             {siteConfig.heroEyebrow}
           </p>
           <h1 className="font-heading text-5xl font-extrabold leading-[1.02] text-[var(--text-primary)] sm:text-6xl lg:text-7xl">
             <span className="block overflow-hidden">
-              <span className="hero-word inline-block">Find Your Dog&apos;s</span>
+              <span className="hero-word inline-block translate-y-full">Find Your Dog&apos;s</span>
             </span>
             <span className="block overflow-hidden">
-              <span className="hero-word inline-block">
+              <span className="hero-word inline-block translate-y-full">
                 <GradientText>Perfect Match</GradientText>
               </span>
             </span>
           </h1>
-          <p className="hero-copy mt-6 max-w-2xl text-lg leading-8 text-[var(--text-secondary)]">
+          <p className="hero-copy mt-6 max-w-2xl translate-y-6 text-lg leading-8 text-[var(--text-secondary)] opacity-0">
             {siteConfig.heroCopy}
           </p>
-          <div className="hero-actions mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="hero-actions mt-8 flex translate-y-6 flex-col gap-3 opacity-0 sm:flex-row">
             <Button size="lg" onClick={() => scrollToId('pricing')}>
               {siteConfig.primaryCta}
             </Button>
@@ -105,7 +98,7 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
               ▶ {siteConfig.secondaryCta}
             </Button>
           </div>
-          <div className="hero-proof mt-8 flex flex-wrap items-center gap-4">
+          <div className="hero-proof mt-8 flex translate-y-5 flex-wrap items-center gap-4 opacity-0">
             <div className="flex">
               {dogProfiles.slice(0, 5).map((dog, index) => (
                 <span
@@ -126,7 +119,7 @@ export const HeroSection = ({ id, ready }: HeroSectionProps) => {
           </div>
         </div>
 
-        <div className="hero-stack pb-6 lg:pb-0">
+        <div className="hero-stack translate-x-20 rotate-[4deg] pb-6 opacity-0 lg:pb-0">
           <SwipeCardStack />
         </div>
       </div>

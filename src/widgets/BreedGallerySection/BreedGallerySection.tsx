@@ -29,11 +29,9 @@ export const BreedGallerySection = ({ id }: { id: string }) => {
           title="Meet every kind of match"
           subtitle="From lap-dog loungers to high-energy trail partners, profiles are built for quick scanning."
         />
-        <div className="grid auto-rows-[18rem] grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {breedGallery.map((dog, index) => (
-            <div key={`${dog.name}-${index}`} className={index === 0 || index === 5 ? 'row-span-2 min-h-0' : 'min-h-0'}>
-              <BreedCard dog={dog} />
-            </div>
+            <BreedCard key={`${dog.name}-${index}`} dog={dog} />
           ))}
         </div>
       </div>

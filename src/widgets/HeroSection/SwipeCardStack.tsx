@@ -32,15 +32,14 @@ export const SwipeCardStack = () => {
 
   return (
     <div className="perspective-container group relative mx-auto h-[28rem] w-full max-w-sm sm:h-[32rem]">
-      {decision && (
+      {decision === 'like' && (
         <span
           className={cn(
-            'decision-burst pointer-events-none absolute left-1/2 top-1/2 z-40 inline-flex size-28 items-center justify-center rounded-full border-4 bg-white/85 text-6xl font-extrabold shadow-[var(--shadow-glow-lg)] backdrop-blur dark:bg-neutral-950/75',
-            decision === 'like' ? 'border-primary-300 text-primary-500' : 'border-neutral-300 text-neutral-600',
+            'decision-burst pointer-events-none absolute left-1/2 top-1/2 z-40 inline-flex items-center justify-center font-heading text-8xl font-extrabold text-primary-500 drop-shadow-[0_18px_30px_rgba(230,53,155,0.42)]',
           )}
           aria-hidden="true"
         >
-          {decision === 'like' ? '♥' : '×'}
+          ♥
         </span>
       )}
       {visibleCards

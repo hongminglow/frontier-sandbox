@@ -264,22 +264,22 @@ img {
 @keyframes swipe-left {
   to {
     opacity: 0;
-    transform: translate3d(-28rem, -2rem, 0) rotate(-18deg);
+    transform: scale(0.94);
   }
 }
 
 @keyframes decision-burst {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.65);
+    transform: translate(-50%, -50%) scale(1.85);
   }
-  45% {
+  16% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.15);
+    transform: translate(-50%, -50%) scale(1.45);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.6);
+    transform: translate(-50%, -50%) scale(0.35);
   }
 }
 
