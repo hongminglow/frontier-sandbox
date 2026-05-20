@@ -12,7 +12,7 @@ export const Navbar = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const sectionIds = useMemo(() => navigationItems.map((item) => item.id), [])
   const activeId = useIntersection(sectionIds)
-  const { scrollToId } = useSmoothScroll()
+  const { scrollToId, scrollToTop } = useSmoothScroll()
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
@@ -43,7 +43,7 @@ export const Navbar = () => {
           >
             <button
               type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onClick={scrollToTop}
               className="inline-flex min-h-11 items-center gap-2 rounded-full pr-3 font-heading text-xl font-extrabold text-[var(--text-primary)]"
               aria-label="Go to top"
             >

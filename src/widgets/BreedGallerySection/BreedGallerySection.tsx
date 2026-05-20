@@ -5,6 +5,8 @@ import { BreedCard } from './BreedCard'
 
 export const BreedGallerySection = ({ id }: { id: string }) => {
   const sectionRef = useScrollTrigger<HTMLElement>((element, gsap) => {
+    const galleryGrid = element.querySelector('.breed-grid') ?? element
+
     gsap.fromTo(
       element.querySelectorAll('.breed-card'),
       { y: 80, rotate: -2, autoAlpha: 0 },
@@ -19,8 +21,8 @@ export const BreedGallerySection = ({ id }: { id: string }) => {
           from: 'start',
         },
         scrollTrigger: {
-          trigger: element,
-          start: 'top 70%',
+          trigger: galleryGrid,
+          start: 'top 78%',
           toggleActions: 'play reverse play reverse',
         },
       },
@@ -34,7 +36,7 @@ export const BreedGallerySection = ({ id }: { id: string }) => {
           title="Meet every kind of match"
           subtitle="From lap-dog loungers to high-energy trail partners, profiles are built for quick scanning."
         />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="breed-grid grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {breedGallery.map((dog, index) => (
             <BreedCard key={`${dog.name}-${index}`} dog={dog} />
           ))}
